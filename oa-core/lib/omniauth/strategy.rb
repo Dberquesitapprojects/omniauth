@@ -27,6 +27,7 @@ module OmniAuth
       @env = env
       if request.path == request_path
         status, headers, body = *call_app!
+        session['query_params'] = Rack::Request.new(@env).params
         @response = Rack::Response.new(body, status, headers)
         request_phase
       elsif request.path == callback_path
@@ -46,6 +47,8 @@ module OmniAuth
     
     def callback_phase
       @env['omniauth.auth'] = auth_hash
+      @env['omniauth.params'] = session['query_params'] || {}
+      session['query_params'] = nil if session['query_params']
       call_app!
     end
     
